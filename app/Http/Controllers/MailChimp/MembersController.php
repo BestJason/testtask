@@ -75,7 +75,7 @@ class MembersController extends Controller
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
 
-        return $this->successfulResponse($list->toArray());
+        return $this->successfulResponse($member->toArray());
     }
 
 

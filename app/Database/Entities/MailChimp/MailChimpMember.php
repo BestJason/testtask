@@ -63,7 +63,7 @@ class MailChimpMember extends MailChimpEntity
     private $language;
 
     /**
-     * @ORM\Column(name="use_archive_bar", type="boolean", nullable=true)
+     * @ORM\Column(name="vip", type="boolean", nullable=true)
      *
      * @var bool
      */
@@ -154,8 +154,9 @@ class MailChimpMember extends MailChimpEntity
             'location.latitude' => 'nullable|numeric',
             'location.longitude' => 'nullable|numeric',
             'marketing_permissions' => 'nullable|array',
-            'marketing_permissions.marketing_permission_id' => 'nullable|string',
-            'marketing_permissions.enabled' => 'nullable|boolean',
+            'marketing_permissions.0' => 'nullable|string',
+            'marketing_permissions.1' => 'nullable|string',
+            'marketing_permissions.2' => 'nullable|boolean',
             'ip_signup' => 'nullable|ip',
             'timestamp_signup' => 'nullable|date_format:"Y-m-d H:i:s"',
             'ip_opt' => 'nullable|ip',
