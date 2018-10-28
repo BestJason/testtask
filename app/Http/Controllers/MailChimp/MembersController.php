@@ -58,7 +58,7 @@ class MembersController extends Controller
         /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
         $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
 
-        if ($list === null) {
+        if (is_null($list)) {
             return $this->errorResponse(
                 ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
                 404
@@ -72,6 +72,53 @@ class MembersController extends Controller
             $this->saveEntity($member->setListId($listId));
         } catch (Exception $exception) {
             // Return error response if something goes wrong
+            return $this->errorResponse(['message' => $exception->getMessage()]);
+        }
+
+        return $this->successfulResponse($member->toArray());
+    }
+
+    /**
+     * Update One Member Of MailChimp list.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $listId
+     * @param string $memberId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, string $listId, string $memberId): JsonResponse
+    {
+        /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
+        $member = $this->entityManager->getRepository(MailChimpMember::class)->find($memberId);
+
+        if (is_null($member)) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpMember[member_id: %s, list_id: %s] not found', $memberId, $listId)],
+                404
+            );
+        }
+
+        // Update member properties
+        $member->fill($request->all());
+
+        // Validate entity
+        $validator = $this->getValidationFactory()->make($member->toMailChimpArray(), $member->getValidationRules());
+
+        if ($validator->fails()) {
+            // Return error response if validation failed
+            return $this->errorResponse([
+                'message' => 'Invalid data given',
+                'errors' => $validator->errors()->toArray()
+            ]);
+        }
+
+        try {
+            // Update member into database
+            $this->saveEntity($member);
+            // Update member into MailChimp
+            $this->mailChimp->patch('lists/' . $listId . '/members/' . md5($member->getEmailAddress()), $member->toMailChimpArray());
+        } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
 
