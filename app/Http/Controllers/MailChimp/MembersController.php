@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\MailChimp;
 
-use App\Http\Controllers\Controller;
-use Doctrine\ORM\EntityManagerInterface;
-use Mailchimp\Mailchimp;
 use App\Database\Entities\MailChimp\MailChimpList;
 use App\Database\Entities\MailChimp\MailChimpMember;
+use App\Http\Controllers\Controller;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Mailchimp\Mailchimp;
 
 class MembersController extends Controller
 {
@@ -123,6 +123,36 @@ class MembersController extends Controller
         }
 
         return $this->successfulResponse($member->toArray());
+    }
+
+    /**
+     * Retrieve and return a member from MailChimp list.
+     *
+     * @param string $listId
+     * @param string $memberId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(string $listId, string $memberId): JsonResponse
+    {
+        /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
+        $member = $this->entityManager->getRepository(MailChimpMember::class)->find($memberId);
+
+        if (is_null($member)) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpMember[member_id: %s, list_id: %s] not found', $memberId, $listId)],
+                404
+            );
+        }
+
+        try {
+            // Get member into MailChimp
+            $response = $this->mailChimp->get('lists/' . $listId . '/members/' . md5($member->getEmailAddress()), $member->toMailChimpArray());
+        } catch (Exception $exception) {
+            return $this->errorResponse(['message' => $exception->getMessage()]);
+        }
+
+        return $this->successfulResponse($response->toArray());
     }
 
 
