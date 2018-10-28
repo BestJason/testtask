@@ -56,7 +56,7 @@ class MembersController extends Controller
         }
 
         /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
-        $list = $this->entityManager->getRepository(MailChimpList::class)->find($listId);
+        $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
 
         if ($list === null) {
             return $this->errorResponse(
@@ -66,11 +66,9 @@ class MembersController extends Controller
         }
 
         try {
-            // Save member into db
-            $this->saveEntity($member);
             // Save member into list
             $this->mailChimp->post('lists/' . $listId . '/members', $member->toMailChimpArray());
-            // Save member into db
+            // Set List Id For Member and Save member into db
             $this->saveEntity($member->setListId($listId));
         } catch (Exception $exception) {
             // Return error response if something goes wrong
