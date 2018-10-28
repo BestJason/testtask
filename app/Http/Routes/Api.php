@@ -18,6 +18,6 @@ $router->group(['prefix' => 'mailchimp', 'namespace' => 'MailChimp'], function (
         $router->post('/', 'MembersController@create');
         $router->put('/{memberId}', 'MembersController@update');
         $router->get('/{memberId}', 'MembersController@show');
-        $router->get('/', 'MembersController@show');
+        $router->get('/', 'MembersController@showAll');
     });
 });
