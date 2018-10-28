@@ -371,6 +371,20 @@ class MailChimpMember extends MailChimpEntity
     }
 
     /**
+     * Set list id.
+     *
+     * @param string $listId
+     *
+     * @return MailChimpMember
+     */
+    public function setListId(string $listId): MailChimpMember
+    {
+        $this->listId = $listId;
+
+        return $this;
+    }
+
+    /**
      * Get array representation of entity.
      *
      * @return array
