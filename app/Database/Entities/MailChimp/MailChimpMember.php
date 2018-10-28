@@ -151,14 +151,14 @@ class MailChimpMember extends MailChimpEntity
             'language' => 'nullable|string',
             'vip' => 'nullable|boolean',
             'location' => 'nullable|array',
-            'location.latitude' => 'nullable|number',
-            'location.longitude' => 'nullable|number',
+            'location.latitude' => 'nullable|numeric',
+            'location.longitude' => 'nullable|numeric',
             'marketing_permissions' => 'nullable|array',
             'marketing_permissions.marketing_permission_id' => 'nullable|string',
             'marketing_permissions.enabled' => 'nullable|boolean',
-            'ip_signup' => 'nullable|string',
+            'ip_signup' => 'nullable|ip',
             'timestamp_signup' => 'nullable|string',
-            'ip_opt' => 'nullable|string',
+            'ip_opt' => 'nullable|ip',
             'timestamp_opt' => 'nullable|string',
             'tags' => 'nullable|array'
         ];
