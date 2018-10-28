@@ -109,7 +109,7 @@ class MailChimpMember extends MailChimpEntity
      *
      * @var string
      */
-    private $timestamp_Opt;
+    private $timestampOpt;
 
     /**
      * @ORM\Column(name="tags", type="array", nullable=true)
