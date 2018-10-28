@@ -147,7 +147,36 @@ class MembersController extends Controller
 
         try {
             // Get member into MailChimp
-            $response = $this->mailChimp->get('lists/' . $listId . '/members/' . md5($member->getEmailAddress()), $member->toMailChimpArray());
+            $response = $this->mailChimp->get('lists/' . $listId . '/members/' . md5($member->getEmailAddress()));
+        } catch (Exception $exception) {
+            return $this->errorResponse(['message' => $exception->getMessage()]);
+        }
+
+        return $this->successfulResponse($response->toArray());
+    }
+
+    /**
+     * Retrieve and return all members from MailChimp list.
+     *
+     * @param string $listId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function showAll(string $listId): JsonResponse
+    {
+        /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
+        $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
+
+        if (is_null($list)) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
+                404
+            );
+        }
+
+        try {
+            // Get member into MailChimp
+            $response = $this->mailChimp->get('lists/' . $listId . '/members');
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
