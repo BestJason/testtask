@@ -117,7 +117,7 @@ class MembersController extends Controller
             // Update member into database
             $this->saveEntity($member);
             // Update member into MailChimp
-            $this->mailChimp->patch('lists/' . $listId . '/members/' . md5($member->getEmailAddress()), $member->toMailChimpArray());
+            $this->mailChimp->patch('lists/' . $listId . '/members/' . \md5($member->getEmailAddress()), $member->toMailChimpArray());
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
@@ -147,7 +147,7 @@ class MembersController extends Controller
 
         try {
             // Get member into MailChimp
-            $response = $this->mailChimp->get('lists/' . $listId . '/members/' . md5($member->getEmailAddress()));
+            $response = $this->mailChimp->get('lists/' . $listId . '/members/' . \md5($member->getEmailAddress()));
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
@@ -182,6 +182,38 @@ class MembersController extends Controller
         }
 
         return $this->successfulResponse($response->toArray());
+    }
+
+    /**
+     * Remove One Member of MailChimp list.
+     *
+     * @param string $listId
+     * @param string $memberId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function remove(string $listId, string $memberId): JsonResponse
+    {
+        /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
+        $member = $this->entityManager->getRepository(MailChimpMember::class)->find($memberId);
+
+        if (is_null($member)) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpMember[member_id: %s, list_id: %s] not found', $memberId, $listId)],
+                404
+            );
+        }
+
+        try {
+            // Remove member from database
+            $this->removeEntity($member);
+            // Remove list from MailChimp
+            $this->mailChimp->delete('lists/' . $listId . '/members/' . \md5($member->getEmailAddress()));
+        } catch (Exception $exception) {
+            return $this->errorResponse(['message' => $exception->getMessage()]);
+        }
+
+        return $this->successfulResponse([]);
     }
 
 
