@@ -157,9 +157,9 @@ class MailChimpMember extends MailChimpEntity
             'marketing_permissions.marketing_permission_id' => 'nullable|string',
             'marketing_permissions.enabled' => 'nullable|boolean',
             'ip_signup' => 'nullable|ip',
-            'timestamp_signup' => 'nullable|string',
+            'timestamp_signup' => 'nullable|date_format:"Y-m-d H:i:s"',
             'ip_opt' => 'nullable|ip',
-            'timestamp_opt' => 'nullable|string',
+            'timestamp_opt' => 'nullable|date_format:"Y-m-d H:i:s"',
             'tags' => 'nullable|array'
         ];
     }
