@@ -8,12 +8,6 @@ use Tests\App\TestCases\MailChimp\MemberTestCase;
 
 class MembersControllerTest extends MemberTestCase
 {
-
-    /**
-     * @var object
-     */
-    protected $listObject = null;
-
     /**
      * Test controller returns error response when exception is thrown during create MailChimp request.
      *
@@ -24,7 +18,13 @@ class MembersControllerTest extends MemberTestCase
         /** @noinspection PhpParamsInspection Mock given on purpose */
         $controller = new MembersController($this->entityManager, $this->mockMailChimpForException('post'));
 
-        $this->assertMailChimpExceptionResponse($controller->create($this->getRequest(static::$memberData), $this->mailChimpId, true));
+        // Create Temp Member
+        list($memberData, $member) = $this->createTempMember();
+        if (isset($member['member_id'])) {
+            $this->createdMemberEmails[] = $member['email_address']; // Store MailChimp member email address for cleaning purposes
+        }
+
+        $this->assertMailChimpExceptionResponse($controller->create($this->getRequest(static::$memberData), $this->mailChimpId));
     }
 
     /**
@@ -66,7 +66,13 @@ class MembersControllerTest extends MemberTestCase
             return;
         }
 
-        $this->assertMailChimpExceptionResponse($controller->showAll($this->mailChimpId, true));
+        // Create Temp Member
+        list($memberData, $member) = $this->createTempMember();
+        if (isset($member['member_id'])) {
+            $this->createdMemberEmails[] = $member['email_address']; // Store MailChimp member email address for cleaning purposes
+        }
+
+        $this->assertMailChimpExceptionResponse($controller->showAll($this->mailChimpId));
     }
 
     /**

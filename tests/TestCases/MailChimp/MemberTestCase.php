@@ -22,12 +22,14 @@ abstract class MemberTestCase extends ListTestCase
      * @var array
      */
     protected static $memberData = [
-        'email_address' => 'mrjasonedu+3@gmail.com',
+        'email_address' => 'testestets@gmail.com',
         'email_type' => 'html',
         'status' => 'subscribed',
         'merge_fields' => [
             'FNAME' => 'Jason',
             'LNAME' => 'Lee',
+            'ADDRESS' => '',
+            'PHONE' => ''
         ],
         'language' => 'en',
         'vip' => true,
@@ -103,7 +105,7 @@ abstract class MemberTestCase extends ListTestCase
 
         foreach ($this->createdMemberEmails as $memberEmail) {
             // Delete member on MailChimp after test
-            $mailChimp->delete('lists/' . $this->mailChimpId . '/members/' . \md5($memberEmail));
+            $mailChimp->delete('lists/' . $this->mailChimpId . '/members/' . \md5(\strtolower($memberEmail)));
         }
 
         parent::tearDown();
@@ -112,16 +114,50 @@ abstract class MemberTestCase extends ListTestCase
     /**
      * Asserts error response when member not found.
      *
-     * @param string $memberId
+     * @param string $memberEmail
      *
      * @return void
      */
-    protected function assertMemberNotFoundResponse(string $memberId): void
+    protected function assertMemberNotFoundResponse(string $memberId, string $listId): void
     {
         $content = \json_decode($this->response->content(), true);
 
         $this->assertResponseStatus(404);
         self::assertArrayHasKey('message', $content);
-        self::assertEquals(\sprintf('MailChimpMember[%s] not found', $memberId), $content['message']);
+        self::assertEquals(\sprintf('MailChimpMember[member_id: %s, list_id: %s] not found', $memberId, $listId), $content['message']);
+    }
+
+    /**
+     * Create A Temp List Data For Testing Member
+     *
+     * @return void
+     */
+    protected function createTempList(): void
+    {
+        $listData = static::$listData;
+        $listData['mail_chimp_id'] = $this->mailChimpId;
+        $this->createList($listData);
+    }
+
+
+    /**
+     * Create a temp member for testing
+     *
+     * @return array
+     *
+     */
+    protected function createTempMember(): array
+    {
+        // Create A Temp List Data
+        $this->createTempList();
+
+        // Randomly generate an email
+        $memberData = static::$memberData;
+        $memberData['email_address'] = uniqid() . '@gmail.com';
+
+        $this->post('/mailchimp/lists/' . $this->mailChimpId . '/members', $memberData);
+
+        $content = \json_decode($this->response->getContent(), true);
+        return [$memberData, $content];
     }
 }

@@ -40,7 +40,7 @@ class MembersController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request, string $listId, $isUnitTest = false): JsonResponse
+    public function create(Request $request, string $listId): JsonResponse
     {
         // Instantiate entity
         $member = new MailChimpMember($request->all());
@@ -55,17 +55,14 @@ class MembersController extends Controller
             ]);
         }
 
-        // Indetify if the request is PHP unit test
-        if (!$isUnitTest) {
-            /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
-            $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
+        /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
+        $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
 
-            if (is_null($list)) {
-                return $this->errorResponse(
-                    ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
-                    404
-                );
-            }
+        if (is_null($list)) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
+                404
+            );
         }
 
         try {
@@ -120,7 +117,7 @@ class MembersController extends Controller
             // Update member into database
             $this->saveEntity($member);
             // Update member into MailChimp
-            $this->mailChimp->patch('lists/' . $listId . '/members/' . \md5($member->getEmailAddress()), $member->toMailChimpArray());
+            $this->mailChimp->patch('lists/' . $listId . '/members/' . \md5(\strtolower($member->getEmailAddress())), $member->toMailChimpArray());
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
@@ -150,7 +147,7 @@ class MembersController extends Controller
 
         try {
             // Get member into MailChimp
-            $response = $this->mailChimp->get('lists/' . $listId . '/members/' . \md5($member->getEmailAddress()));
+            $response = $this->mailChimp->get('lists/' . $listId . '/members/' . \md5(\strtolower($member->getEmailAddress())));
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
@@ -165,20 +162,18 @@ class MembersController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function showAll(string $listId, $isUnitTest = false): JsonResponse
+    public function showAll(string $listId): JsonResponse
     {
-        // Indetify if the request is PHP unit test
-        if (!$isUnitTest) {
-            /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
-            $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
+        /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
+        $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
 
-            if (is_null($list)) {
-                return $this->errorResponse(
-                    ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
-                    404
-                );
-            }
+        if (is_null($list)) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
+                404
+            );
         }
+
 
         try {
             // Get member into MailChimp
@@ -214,7 +209,7 @@ class MembersController extends Controller
             // Remove member from database
             $this->removeEntity($member);
             // Remove list from MailChimp
-            $this->mailChimp->delete('lists/' . $listId . '/members/' . \md5($member->getEmailAddress()));
+            $this->mailChimp->delete('lists/' . $listId . '/members/' . \md5(\strtolower($member->getEmailAddress())));
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
