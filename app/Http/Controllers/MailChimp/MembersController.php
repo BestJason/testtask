@@ -40,7 +40,7 @@ class MembersController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request, string $listId): JsonResponse
+    public function create(Request $request, string $listId, $isUnitTest = false): JsonResponse
     {
         // Instantiate entity
         $member = new MailChimpMember($request->all());
@@ -55,14 +55,17 @@ class MembersController extends Controller
             ]);
         }
 
-        /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
-        $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
+        // Indetify if the request is PHP unit test
+        if (!$isUnitTest) {
+            /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
+            $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
 
-        if (is_null($list)) {
-            return $this->errorResponse(
-                ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
-                404
-            );
+            if (is_null($list)) {
+                return $this->errorResponse(
+                    ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
+                    404
+                );
+            }
         }
 
         try {
@@ -162,16 +165,19 @@ class MembersController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function showAll(string $listId): JsonResponse
+    public function showAll(string $listId, $isUnitTest = false): JsonResponse
     {
-        /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
-        $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
+        // Indetify if the request is PHP unit test
+        if (!$isUnitTest) {
+            /** @var \App\Database\Entities\MailChimp\MailChimpList|null $list */
+            $list = $this->entityManager->getRepository(MailChimpList::class)->findOneBy(['mailChimpId' => $listId]);
 
-        if (is_null($list)) {
-            return $this->errorResponse(
-                ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
-                404
-            );
+            if (is_null($list)) {
+                return $this->errorResponse(
+                    ['message' => \sprintf('MailChimpList[%s] not found', $listId)],
+                    404
+                );
+            }
         }
 
         try {

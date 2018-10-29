@@ -8,8 +8,6 @@ use Mailchimp\Mailchimp;
 
 abstract class MemberTestCase extends ListTestCase
 {
-    protected const MAILCHIMP_EXCEPTION_MESSAGE = 'MailChimp exception';
-
     /**
      * @var array
      */
@@ -18,18 +16,13 @@ abstract class MemberTestCase extends ListTestCase
     /**
      * @var string
      */
-    protected $mailChimpId = '';
-
-    /**
-     * @var string
-     */
-    protected $listId = '';
+    protected $mailChimpId = '38d3a90209';
 
     /**
      * @var array
      */
     protected static $memberData = [
-        'email_address' => 'mrjasonedu+1@gmail.com',
+        'email_address' => 'mrjasonedu+3@gmail.com',
         'email_type' => 'html',
         'status' => 'subscribed',
         'merge_fields' => [
@@ -88,13 +81,6 @@ abstract class MemberTestCase extends ListTestCase
      */
     protected function createMember(array $data): MailChimpMember
     {
-        // Create mail chimp list
-        $list = $this->createList(self::$listData);
-
-        // get mail chimp id
-        $this->mailChimpId = $list->getMailChimpId();
-        $this->listId = $list->getId();
-
         // Create a member for list
         $member = new MailChimpMember($data);
         $member->setListId($this->mailChimpId);
@@ -106,7 +92,7 @@ abstract class MemberTestCase extends ListTestCase
     }
 
     /**
-     * Call MailChimp to delete list and members created during test.
+     * Call MailChimp to delete members created during test.
      *
      * @return void
      */
@@ -119,8 +105,6 @@ abstract class MemberTestCase extends ListTestCase
             // Delete member on MailChimp after test
             $mailChimp->delete('lists/' . $this->mailChimpId . '/members/' . \md5($memberEmail));
         }
-
-        $mailChimp->delete('lists/' . $this->listId);
 
         parent::tearDown();
     }
