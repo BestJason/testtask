@@ -22,7 +22,13 @@ abstract class WithDatabaseTestCase extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(Kernel::class)->call('doctrine:schema:create');
+        try {
+            // if table exists, skip
+            $this->app->make(Kernel::class)->call('doctrine:schema:create');
+        } catch (\Exception $e) {
+            // just skip
+        }
+
         $this->entityManager = $this->app->make(EntityManagerInterface::class);
     }
 
